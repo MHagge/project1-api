@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Puns for any Occasion</title>
+    <link rel="stylesheet" type="text/css" href="/style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-core/5.8.34/browser.min.js"></script>
+    <script type="text/babel">
+    ()=>{
+      "use strict";
+      
+      const handleResponse = (xhr) =>{
+        const content = document.querySelector('#content');
+        const displayPunDiv = document.querySelector('#displayPunsDiv');
+        //printing the etag for version number of this response
+        console.log(xhr.getResponseHeader ('etag'));
+
+        //Check network tag for real status code
+        console.log(xhr.status);
+
+        //depending on which headers are used
+        //The browser will either re-fire a 200 or will show a 304.
+        switch(xhr.status) {
+          case 200: //if success
+            content.innerHTML = `<b>Success</b>`;
+            break;
+          case 201: //if created
+            content.innerHTML = '<b>Create</b>';
+            break;
+          case 204:
+            content.innerHTML = '<b>Updated(No Content)</b>';
+            break;
+          case 304: //if not modified
+            //THIS may only fire under certain circumstances
+            //Often a 200 will fire because this will tell the
+            //browser to pull from cache (which was a 200 response)
+            content.innerHTML = '<b>Not Modified</b>';
+            break;
+          case 400: //if bad request
+            content.innerHTML = `<b>Bad Request</b>`;
+            break;
+          case 404: //if not found
+            content.innerHTML = `<b>Resource Not Found</b>`;
+            break;
+          default: //any other status
+            content.innerHTML = `Error code not implemented by client.`;
+            break;
+        }
+
+        //console.dir(xhr);
+
+
+        if(xhr.response) {
+          displayPunDiv.innerHTML = "";
+          //parse the object and print it
+          const obj = JSON.parse(xhr.response);
+          console.dir(obj);
+          if(obj.id === "resJSON"){
+            displayPunDiv.innerHTML += obj.message;
+          }else{
+            let keys = Object.keys(obj);
+            console.dir(keys);
+            for(let i = 0; i<keys.length; i++){
+              console.dir(obj[keys[i]]);
+              displayPunDiv.innerHTML += `<br />${obj[keys[i]].pun}`;
+              displayPunDiv.innerHTML += `<br /><em>Made by </em> ${obj[keys[i]].author}`;
+            }
+          }
+        }
+      };
+      
+      const addPunAjax = (e, addPunForm) => {
+        //grab name and age to send as params
+        const punField = addPunForm.querySelector("#punField");
+        const authorField = addPunForm.querySelector("#authorField");
+        //string it
+        const paramsString = `pun=${punField.value}&author=${authorField.value}`;
+
+        //create a new xhr request 
+        const xhr = new XMLHttpRequest();
+        xhr.open('POST', '/addPun');
+
+        xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+
+        //set our requested response type in hopes of a JSON response
+        xhr.setRequestHeader ('Accept', 'application/json');
+
+        xhr.onload = () => handleResponse(xhr);
+
+        //send our ajax request to the server
+        xhr.send(paramsString);
+
+        e.preventDefault();
+        return false;
+      };
+    
+      const getPunAjax = (e, getPunForm) => {
+        //grab method type, url
+        //const url = userForm.querySelector("#urlField"); **not using this rn, might want it later for more functionality e.g. getting random or specific puns
+
+        //create a new xhr request
+        const xhr = new XMLHttpRequest();
+
+        xhr.open('GET', '/getPun');
+
+        //set our requested response type in hopes of a JSON response
+        xhr.setRequestHeader ('Accept', 'application/json');
+
+        xhr.onload = () => handleResponse(xhr);
+
+        //send our ajax request to the server
+        xhr.send();
+
+        e.preventDefault();
+        return false;      
+      };
+      
+      const init = () =>{
+        const addPunForm = document.querySelector("#addPunForm");
+        const getPunForm = document.querySelector("#getPunForm");
+        
+        //attach event listeners
+        addPunForm.addEventListener('submit', (e) => {
+          addPunAjax(e, addPunForm);
+        });
+        getPunForm.addEventListener('submit',  (e) => { 
+          getPunAjax(e, getPunForm);
+        });
+        
+      };
+      
+      window.onload = init;
+      
+    }();
+    </script>
+
+  </head>
+  <body>
+    
+    <div id="getPunDiv">
+      <form id="getPunForm" action="/getPun" method="get">
+        <input type="submit" value="Get Pun"></button>
+        <div id="displayPunsDiv"></div>
+      </form>
+    </div>
+    
+    <div id="addPunDiv">
+      <form id="addPunForm" action="/addPun" method="post">
+        <input type="submit" value="Add Pun" /><br />
+        <label for="pun">Write Pun Here:</label>
+        <input type="text" id="punField" name="pun" /><br />
+        <label for="author">Author:</label>
+        <input type="text" id="authorField" name="author" />  
+      </form>
+    </div>
+    <div id="content"></div>
+    
+  </body>
+</html>

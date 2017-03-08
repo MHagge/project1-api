@@ -1,0 +1,45 @@
+body{
+  position: relative;
+  margin: auto 0;
+  margin-top: 7%; 
+  width: 100%;
+  text-align: center;
+  background-color: #222; 
+}
+input{
+  margin: 20px;
+}
+div{
+  margin: 20px;
+}
+label{
+  margin-top: 10px;
+}
+p{
+  margin: 10px;
+}
+#getPunDiv{
+  background-color: darkseagreen;
+  border-radius: 3px;
+  position: relative;
+  margin: 60px auto;
+  width:60%;
+  text-align: left;
+  padding: 5%;
+}
+#addPunDiv{
+  background-color: aquamarine;
+  border-radius: 3px;
+  position: relative;
+  margin: 60px auto;
+  width: 60%;
+  text-align: left;
+  padding: 5%;
+
+}
+#punField{
+  width:50%;
+  overflow: auto;
+  /*resize: both;
+  size: 1;*/
+}
