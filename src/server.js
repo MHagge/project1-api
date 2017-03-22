@@ -11,8 +11,8 @@ const PORT = process.env.PORT || process.env.NODE_PORT || 3000;
 const urlStruct = {
   '/': responseHandler.getIndex,
   '/style.css': responseHandler.getStyle,
-  '/getPun': responseHandler.getPun,
-  '/addPun': responseHandler.addPun,
+  '/getNote': responseHandler.getNote,
+  '/addNote': responseHandler.addNote,
   notFound: responseHandler.whenNotFound,
 };
 
@@ -44,7 +44,7 @@ const onRequest = (request, response) => {
       const bodyParams = query.parse(bodyString);
 
         // pass to our addUser function
-      responseHandler.addPun(request, response, bodyParams);
+      responseHandler.addNote(request, response, bodyParams);
     });
   }
 

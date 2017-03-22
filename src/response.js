@@ -4,12 +4,12 @@ const index = fs.readFileSync(`${__dirname}/../client/client.html`);
 
 const style = fs.readFileSync(`${__dirname}/../client/style.css`);
 
-const puns = {};
-let punInt = 0;
+const notes = {};
+let noteInt = 0;
 
 const crypto = require('crypto');
 
-let etag = crypto.createHash('sha1').update(JSON.stringify(puns));
+let etag = crypto.createHash('sha1').update(JSON.stringify(notes));
 
 let digest = etag.digest('hex');
 
@@ -42,39 +42,59 @@ const getStyle = (request, response) => {
   respond(request, response, 200, { 'Content-Type': 'text/css' }, style);
 };
 
-const getPun = (request, response) => {
-  // for now get all puns? wip
+const getNote = (request, response) => {
+  // for now get all notes? wip
   if (request.headers['if-none-match'] === digest) {
-    return respond(request, response, 304, header, JSON.stringify(puns));
+    return respond(request, response, 304, header, JSON.stringify(notes));
   }
-  return respond(request, response, 200, header, JSON.stringify(puns));
+  return respond(request, response, 200, header, JSON.stringify(notes));
 };
 
-const addPun = (request, response, params) => {
-  if (params.pun === '') {
+const addNote = (request, response, params) => {
+  if (params.note === '') {
     const responseJSON = {
-      message: '<br />No joke was entered. <br />I guess the real joke is your sad inability to follow simple directions lmao get rekt',
+      message: '<br />No note was entered. Enter a note first!',
       id: 'resJSON',
     };
     return respond(request, response, 400, header, JSON.stringify(responseJSON));
   }
-  const responseJSON = {
-    message: '<br />Pun Added!',
+  let responseJSON = {
+    message: '<br />Note Added!',
     id: 'resJSON',
   };
 
-  // add pun to pun object
-  // console.dir(params);
-  // puns[params.pun] = { author: params.author };
-    /*
-    puns = {
-      bad pun lol{ author: author, otherstuff: stuff}
-    }
-    */
-  puns[`pun${punInt}`] = { pun: params.pun, author: params.author };
-  punInt++;
+  // check if note with title and author already exists
+  const keys = Object.keys(notes);
 
-  etag = crypto.createHash('sha1').update(JSON.stringify(puns));
+  for (let i = 0; i < keys.length; i++) {
+    // const currentNote = `note${noteInt}`;
+
+    // console.log(`notes keys .nots ${notes[keys[i]].note}`);
+    // console.log(params.note);
+    if (notes[keys[i]].note === params.note) {
+      responseJSON = {
+        message: '<br />This note already exists!',
+        id: 'resJSON',
+      };
+      return respond(request, response, 204, header, JSON.stringify(responseJSON));
+    }
+  }
+
+  // add note to note object
+  notes[`note${noteInt}`] = { title: params.title, note: params.note, author: params.author, date: params.date };
+  /*
+  notes{
+    note1{
+      title: Title,
+      note: Note,
+      author: Author
+    },
+  }
+  */
+
+  noteInt++;
+
+  etag = crypto.createHash('sha1').update(JSON.stringify(notes));
   digest = etag.digest('hex');
 
   return respond(request, response, 201, header, JSON.stringify(responseJSON));
@@ -93,8 +113,8 @@ module.exports = {
   respond,
   getIndex,
   getStyle,
-  getPun,
-  addPun,
+  getNote,
+  addNote,
   whenNotFound,
 };
 

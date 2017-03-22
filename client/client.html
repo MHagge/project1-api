@@ -1,16 +1,20 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Puns for any Occasion</title>
+    <title>Notes for any Occasion</title>
     <link rel="stylesheet" type="text/css" href="/style.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-core/5.8.34/browser.min.js"></script>
     <script type="text/babel">
     ()=>{
       "use strict";
       
-      const handleResponse = (xhr) =>{
+      const displayNoteDiv = document.querySelector('#displayNotesDiv');
+      const searchedNotes = document.querySelector("#searchedNotes");
+      let notesOnPage = 0;
+      
+      const handleResponse = (xhr, action) =>{
         const content = document.querySelector('#content');
-        const displayPunDiv = document.querySelector('#displayPunsDiv');
+        //const responseDiv = document.querySelector('#responseDiv');//coooodddy :( why does it still work without this line im so confused 
         //printing the etag for version number of this response
         console.log(xhr.getResponseHeader ('etag'));
 
@@ -46,45 +50,226 @@
             break;
         }
 
-        //console.dir(xhr);
-
-
-        if(xhr.response) {
-          displayPunDiv.innerHTML = "";
+        console.dir(xhr);
+        
+        
+        if(xhr.response){
+          //console.log("in if for xhr.response");
           //parse the object and print it
           const obj = JSON.parse(xhr.response);
           console.dir(obj);
-          if(obj.id === "resJSON"){
-            displayPunDiv.innerHTML += obj.message;
+
+          if(action === 'add'){
+            console.log(`obj msg: ${obj.message}`);
+            responseDiv.innerHTML = "";
+            responseDiv.innerHTML += `${obj.message}`;
           }else{
+            //console.log('in else for action === add');
+            
             let keys = Object.keys(obj);
-            console.dir(keys);
-            for(let i = 0; i<keys.length; i++){
-              console.dir(obj[keys[i]]);
-              displayPunDiv.innerHTML += `<br />${obj[keys[i]].pun}`;
-              displayPunDiv.innerHTML += `<br /><em>Made by </em> ${obj[keys[i]].author}`;
+            
+            //console.log(`action: ${action}`);
+
+            if(action === 'get'){//(xhr.response) {
+              //console.dir(responseDiv);
+              displayNoteDiv.innerHTML = "";
+
+              for(let i = 0; i<keys.length; i++){
+                //console.dir(obj[keys[i]]);
+
+                /*
+                displayNoteDiv.innerHTML += `<div class="noteDiv" id="Div${notesOnPage}"></div>`;
+                const noteDiv = displayNoteDiv.querySelector(`#Div${notesOnPage}`);
+                
+                noteDiv.innerHTML += `<h2>${obj[keys[i]].title}</h2>`;
+                noteDiv.innerHTML += `<p>${obj[keys[i]].note}</p>`;
+                noteDiv.innerHTML += `<br /><p class="by"><em>Added by </em> ${obj[keys[i]].author}</p>`;
+                */
+                            
+                let noteDiv = document.createElement('div');
+                
+                displayNoteDiv.insertBefore(noteDiv, displayNoteDiv.firstChild);
+                
+                noteDiv.setAttribute("id",`Div${notesOnPage}`);
+                noteDiv.setAttribute("class", "noteDiv");
+                
+                noteDiv.innerHTML += `<h2>${obj[keys[i]].title}</h2>`;
+                noteDiv.innerHTML += `<p>${obj[keys[i]].note}</p>`;
+                noteDiv.innerHTML += `<br /><p class="by"><em>Added by </em> ${obj[keys[i]].author}</p>`;  
+                
+
+                setTimeout( ()=>{
+                noteDiv.style.opacity = 1;
+                noteDiv.style.left = "0";
+                },i*100);
+                
+                notesOnPage++;
+              }
+            }
+            if(action === 'getTitles'){
+              //console.log("in if for action === getTitles");
+              searchedNotes.innerHTML = "";
+              const titleArray = [];
+              const category ={
+                cat:'title'
+              };
+              for(let i = 0; i<keys.length; i++){
+                //put titles in array
+                titleArray.push(obj[keys[i]].title);
+                //.sort() that array
+                titleArray.sort();                                  
+              }
+              for(let i=0; i<titleArray.length; i++){
+                //display all
+                searchedNotes.innerHTML += `<p id="term${i}" class="terms">${titleArray[i]}</p>`
+                searchedNotes.innerHTML += `<br />`;
+                //add click event listeners to search and add that note to the thingy
+
+                /*
+                document.querySelector(`#term${i}`).addEventListener('click', (e)=>{
+                  //console.log(e.target.innerHTML);
+                  searchHelper(e.target.innerHTML, category, keys, obj); 
+                });*///won't work :'(
+              }
+              const allTerms = document.querySelectorAll(".terms");
+              for(let i = 0; i<allTerms.length; i++){
+                allTerms[i].addEventListener('click', (e)=>{
+                  searchHelper(e.target.innerHTML, category, keys, obj); 
+                });
+              }
+            }
+            if(action === 'getAuthors'){
+              searchedNotes.innerHTML = "";
+              const authorArray = [];
+              const category ={
+                cat:'author'
+              };
+              for(let i = 0; i<keys.length; i++){
+                //put titles in array
+                authorArray.push(obj[keys[i]].author);
+                //.sort() that array
+                authorArray.sort();                                  
+              }
+              for(let i=0; i<authorArray.length; i++){
+                //display all
+                searchedNotes.innerHTML += `<p id="term${i}" class="terms">${authorArray[i]}</p>`
+                searchedNotes.innerHTML += `<br />`;
+                //add click event listeners to search and add that note to the thingy
+                /*
+                document.querySelector(`#term${i}`).addEventListener('click', (e)=>{
+                  console.log(e.target.innerHTML);
+
+                  searchHelper(e.target.innerHTML, category, keys, obj); 
+                });*/
+              }
+              const allTerms = document.querySelectorAll(".terms");
+              for(let i = 0; i<allTerms.length; i++){
+                allTerms[i].addEventListener('click', (e)=>{
+                  searchHelper(e.target.innerHTML, category, keys, obj); 
+                });
+              }
+            }
+            if(action === 'getDates'){
+              searchedNotes.innerHTML = "";
+              const dateArray = [];
+              const category ={
+                cat:'date'
+              };
+              for(let i = 0; i<keys.length; i++){
+                //put titles in array
+                dateArray.push(obj[keys[i]].date);
+                //.sort() that array
+                dateArray.sort();                                  
+              }
+              for(let i=0; i<dateArray.length; i++){
+                //display all
+                searchedNotes.innerHTML += `<p id="term${i}" class="terms">${dateArray[i]}</p>`
+                searchedNotes.innerHTML += `<br />`;
+                //add click event listeners to search and add that note to the thingy
+                /*
+                document.querySelector(`#term${i}`).addEventListener('click', (e)=>{
+                  console.log(e.target.innerHTML);
+
+                  searchHelper(e.target.innerHTML, category, keys, obj); 
+                });*/
+              }
+              const allTerms = document.querySelectorAll(".terms");
+              for(let i = 0; i<allTerms.length; i++){
+                allTerms[i].addEventListener('click', (e)=>{
+                  searchHelper(e.target.innerHTML, category, keys, obj); 
+                });
+              }
             }
           }
         }
+        
+        
       };
       
-      const addPunAjax = (e, addPunForm) => {
-        //grab name and age to send as params
-        const punField = addPunForm.querySelector("#punField");
-        const authorField = addPunForm.querySelector("#authorField");
-        //string it
-        const paramsString = `pun=${punField.value}&author=${authorField.value}`;
+      const searchHelper = (term, category, keys, obj) =>{
+        
+        
+        for(let i = 0; i<keys.length; i++){
+          let currentNote = obj[keys[i]];
+          //let currentNum = Object.values(currentNote)[0];
+          //console.dir(Object.values(currentNote));
+          
+          if(currentNote[category.cat] === term){
+            //console.log(currentNote);
+            
+            /*
+            displayNoteDiv.innerHTML += `<div class="noteDiv" id="Div${notesOnPage}"></div>`;
+            const noteDiv = displayNoteDiv.querySelector(`#Div${notesOnPage}`);
 
+            noteDiv.innerHTML += `<h2>${currentNote.title}</h2>`;
+            noteDiv.innerHTML += `<p>${currentNote.note}</p>`;
+            noteDiv.innerHTML += `<br /><p class="by"><em>Added by </em> ${currentNote.author}</p>`;
+            */
+            
+            let noteDiv = document.createElement('div');
+
+            displayNoteDiv.insertBefore(noteDiv, displayNoteDiv.firstChild);
+
+            noteDiv.setAttribute("id",`Div${notesOnPage}`);
+            noteDiv.setAttribute("class", "noteDiv");
+                
+            
+            noteDiv.innerHTML += `<h2>${currentNote.title}</h2>`;
+            noteDiv.innerHTML += `<p>${currentNote.note}</p>`;
+            noteDiv.innerHTML += `<br /><p class="by"><em>Added by </em> ${currentNote.author}</p>`;
+
+            
+            setTimeout( ()=>{
+              noteDiv.style.opacity = 1;
+              noteDiv.style.left = "0";
+            },i*100);
+            
+            
+            notesOnPage++;
+            return;
+          } 
+        }
+      };
+      
+      const addNoteAjax = (e, addNoteForm) => {
+        //grab name and age to send as params
+        const titleField = addNoteForm.querySelector("#titleField");
+        const noteField = addNoteForm.querySelector("#noteField");
+        const authorField = addNoteForm.querySelector("#authorField");
+        //string it
+        const paramsString = `title=${titleField.value}&note=${noteField.value}&author=${authorField.value}&date=${new Date()}`;
+
+        
         //create a new xhr request 
         const xhr = new XMLHttpRequest();
-        xhr.open('POST', '/addPun');
+        xhr.open('POST', '/addNote');
 
         xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
 
         //set our requested response type in hopes of a JSON response
         xhr.setRequestHeader ('Accept', 'application/json');
 
-        xhr.onload = () => handleResponse(xhr);
+        xhr.onload = () => handleResponse(xhr, 'add');
 
         //send our ajax request to the server
         xhr.send(paramsString);
@@ -93,19 +278,19 @@
         return false;
       };
     
-      const getPunAjax = (e, getPunForm) => {
+      const getNoteAjax = (e, getNoteForm, action) => {
         //grab method type, url
-        //const url = userForm.querySelector("#urlField"); **not using this rn, might want it later for more functionality e.g. getting random or specific puns
+        //const url = userForm.querySelector("#urlField"); **not using this rn, might want it later for more functionality e.g. getting random or specific notes
 
         //create a new xhr request
         const xhr = new XMLHttpRequest();
 
-        xhr.open('GET', '/getPun');
+        xhr.open('GET', '/getNote');
 
         //set our requested response type in hopes of a JSON response
         xhr.setRequestHeader ('Accept', 'application/json');
 
-        xhr.onload = () => handleResponse(xhr);
+        xhr.onload = () => handleResponse(xhr, action);
 
         //send our ajax request to the server
         xhr.send();
@@ -115,15 +300,20 @@
       };
       
       const init = () =>{
-        const addPunForm = document.querySelector("#addPunForm");
-        const getPunForm = document.querySelector("#getPunForm");
-        
+        const addNoteForm = document.querySelector("#addNoteForm");
+        const getNoteForm = document.querySelector("#getNoteForm");
+        const searchForm = document.querySelector("#searchForm");
+        const searchSelect = document.querySelector("#searchSelect");
+
         //attach event listeners
-        addPunForm.addEventListener('submit', (e) => {
-          addPunAjax(e, addPunForm);
+        addNoteForm.addEventListener('submit', (e) => {
+          addNoteAjax(e, addNoteForm, 'add');
         });
-        getPunForm.addEventListener('submit',  (e) => { 
-          getPunAjax(e, getPunForm);
+        getNoteForm.addEventListener('submit',  (e) => { 
+          getNoteAjax(e, getNoteForm, 'get');
+        });
+        searchForm.addEventListener('submit',  (e) => { 
+          getNoteAjax(e, getNoteForm, searchSelect.value);
         });
         
       };
@@ -135,24 +325,39 @@
 
   </head>
   <body>
+    <h1>Note Keeper</h1>
     
-    <div id="getPunDiv">
-      <form id="getPunForm" action="/getPun" method="get">
-        <input type="submit" value="Get Pun"></button>
-        <div id="displayPunsDiv"></div>
-      </form>
+    <div id='right'>
+      <div id="addNoteDiv">
+        <form id="addNoteForm" action="/addNote" method="post">        
+          <input type="text" id="titleField" placeholder="Title"><br />
+          <input type="text" id="noteField" name="note" placeholder="Enter Note Here..."/><br />
+          <!--<label for="author">Author:</label>-->
+          <input type="text" id="authorField" name="author" placeholder="Author"/> <br />
+          <input class="button" type="submit" value="Add Note" /><br />
+        </form>
+      </div>
+
+      <div id="getNoteDiv">
+        <form id="getNoteForm" action="/getNote" method="get">
+          <input class="button" type="submit" value="Get All Notes">
+        </form>
+        <div id="responseDiv"></div>
+        <div id="displayNotesDiv"></div>
+      </div>
     </div>
     
-    <div id="addPunDiv">
-      <form id="addPunForm" action="/addPun" method="post">
-        <input type="submit" value="Add Pun" /><br />
-        <label for="pun">Write Pun Here:</label>
-        <input type="text" id="punField" name="pun" /><br />
-        <label for="author">Author:</label>
-        <input type="text" id="authorField" name="author" />  
+    <div id="left">
+      <form id="searchForm" action="/getNote" method="get">
+        <input class="button" type="submit" value="Search for Notes by: " />
+        <select id="searchSelect">
+          <option value="getTitles">Title</option>
+          <option value="getAuthors">Author</option>
+          <option value="getDates" selected>Date Added</option>
+        </select>
       </form>
+      <div id='searchedNotes'></div>
     </div>
     <div id="content"></div>
-    
   </body>
 </html>
